@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from "react-native";
 import { ClickCountContext } from "./ClickCountContext";
 
@@ -25,9 +26,14 @@ type CovidStatistics = {
   day: string;
 };
 
+type CountryFlagData = {
+  [country: string]: string; // Maps country name to flag URL
+};
+
 export default function Home() {
   const { clickCount, setClickCount, yourName } = useContext(ClickCountContext); // Use context for managing click count
   const [statistics, setStatistics] = useState<CovidStatistics[]>([]);
+  const [flags, setFlags] = useState<CountryFlagData>({});
 
   // Fetch COVID-19 statistics from the API
   useEffect(() => {
@@ -42,8 +48,11 @@ export default function Home() {
         });
 
         const data = await response.json();
-        const firstTenCountries = data.response.slice(0, 50); // Get the first 50 countries
-        setStatistics(firstTenCountries);
+        const firstFiftyCountries = data.response.slice(0, 50); // Get the first 50 countries
+        setStatistics(firstFiftyCountries);
+
+        // Fetch flags for the listed countries
+        fetchCountryFlags(firstFiftyCountries.map((item: CovidStatistics) => item.country));
       } catch (error) {
         console.error("Error fetching COVID-19 statistics:", error);
       }
@@ -51,6 +60,33 @@ export default function Home() {
 
     fetchStatistics();
   }, []);
+
+ // Fetch country flags
+ const fetchCountryFlags = async (countryNames: string[]) => {
+   const flagData: CountryFlagData = {};
+
+   await Promise.all(
+     countryNames.map(async (countryName) => {
+       try {
+         const normalizedCountryName = countryName.toLowerCase(); // Normalize the country name
+         const response = await fetch(
+           `https://restcountries.com/v3.1/name/${normalizedCountryName}?fullText=true`
+         );
+         const data = await response.json();
+
+         if (data && data[0]) {
+           flagData[countryName] =
+             data[0].flags?.svg || data[0].flags?.png || ""; // Save flag URL
+         }
+       } catch (error) {
+         console.error(`Error fetching flag for ${countryName}:`, error);
+       }
+     })
+   );
+
+   setFlags(flagData);
+ };
+
 
   // Handle item clicks
   const handleItemClick = () => {
@@ -67,10 +103,7 @@ export default function Home() {
       {/* Welcome Message and Click Counter */}
       <View style={styles.headerWrapper}>
         <Text style={styles.welcomeText}>Hello {yourName} 👋🏻</Text>
-        <View style={styles.counterWrapper}>
-          <Text style={styles.notificationIcon}>💜</Text>
-          <Text style={styles.clickCounterText}>{clickCount}</Text>
-        </View>
+
       </View>
 
       {/* Statistics List */}
@@ -80,6 +113,12 @@ export default function Home() {
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.card} onPress={handleItemClick}>
             <View style={styles.cardContent}>
+              {flags[item.country] && (
+                <Image
+                  source={{ uri: flags[item.country] }}
+                  style={styles.flagImage}
+                />
+              )}
               <Text style={styles.cardTitle}>{item.country}</Text>
               <Text style={styles.cardDescription}>
                 Active Cases: {item.cases.active}
@@ -106,6 +145,10 @@ export default function Home() {
           </TouchableOpacity>
         )}
       />
+        {/* Floating Click Counter */}
+            <View style={styles.floatingCounter}>
+              <Text style={styles.counterText}>💜 {clickCount}</Text>
+            </View>
     </View>
   );
 }
@@ -115,6 +158,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f4f6f9",
     paddingHorizontal: 15,
+     position: "relative",
   },
   medicWrapper: {
     justifyContent: "center",
@@ -150,7 +194,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    marginRight: 15,
   },
   notificationIcon: {
     fontSize: 16,
@@ -187,4 +230,30 @@ const styles = StyleSheet.create({
     color: "#4a5568",
     marginTop: 5,
   },
+  flagImage: {
+    width: 60,
+    height: 40,
+    resizeMode: "contain",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+   floatingCounter: {
+      position: "absolute",
+      bottom: 20,
+      right: 20,
+      backgroundColor: "#6d28d9",
+      borderRadius: 20,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+      elevation: 5,
+    },
+    counterText: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: "#fff",
+    },
 });
