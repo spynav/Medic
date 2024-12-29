@@ -7,10 +7,7 @@
 ## Features
 
 - **Global Statistics**: View up-to-date statistics, including confirmed cases, recoveries, and deaths worldwide.
-- **Country-Specific Data**: Search and track COVID-19 data for specific countries, including daily case trends and vaccination progress.
-- **Interactive Visualizations**: Explore charts and graphs for an intuitive understanding of the pandemic's impact.
-- **Health Tips**: Get WHO-recommended guidelines to stay safe and healthy.
-- **Dark Mode**: Enjoy the app in a visually comfortable dark mode, perfect for low-light environments.
+- **Country-Specific Data**: Track COVID-19 data for specific countries, including daily case trends and vaccination progress.
 
 ## Installation
 
@@ -38,8 +35,8 @@ To run this application locally, follow these steps:
 
 - **React Native**: Framework for building native mobile apps using React.
 - **Expo**: A framework and platform for universal React applications.
-- **Axios**: A promise-based HTTP client for making requests to The Movie Database API.
-- **TMDb API**: Provides movie data, including popular movies, details, and more.
+- **Axios**:  HTTP client for seamless API interactions.
+- **TMDb API**:  Provides real-time data on COVID-19 cases, recoveries, and vaccinations.
 
 
 ## Contact
