@@ -61,31 +61,33 @@ export default function Home() {
     fetchStatistics();
   }, []);
 
- // Fetch country flags
- const fetchCountryFlags = async (countryNames: string[]) => {
-   const flagData: CountryFlagData = {};
+// Fetch country flags
+const fetchCountryFlags = async (countryNames) => {
+  const flagData = {};
 
-   await Promise.all(
-     countryNames.map(async (countryName) => {
-       try {
-         const normalizedCountryName = countryName.toLowerCase(); // Normalize the country name
-         const response = await fetch(
-           `https://restcountries.com/v3.1/name/${normalizedCountryName}?fullText=true`
-         );
-         const data = await response.json();
+  await Promise.all(
+    countryNames.map(async (countryName) => {
+      try {
+        // Use country name directly without normalization
+        const response = await fetch(
+          `https://restcountries.com/v3.1/name/${countryName}?fullText=true`
+        );
+        const data = await response.json();
 
-         if (data && data[0]) {
-           flagData[countryName] =
-             data[0].flags?.svg || data[0].flags?.png || ""; // Save flag URL
-         }
-       } catch (error) {
-         console.error(`Error fetching flag for ${countryName}:`, error);
-       }
-     })
-   );
+        if (data && Array.isArray(data) && data.length > 0) {
+          flagData[countryName] =
+            data[0].flags?.svg || data[0].flags?.png || ""; // Save flag URL
+        } else {
+          console.warn(`No data found for country: ${countryName}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching flag for ${countryName}:`, error);
+      }
+    })
+  );
 
-   setFlags(flagData);
- };
+  setFlags(flagData);
+};
 
 
   // Handle item clicks
